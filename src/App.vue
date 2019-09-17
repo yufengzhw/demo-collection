@@ -1,25 +1,54 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <el-container style="height: 100%;">
+      <el-header class="top-menu" height="60">
+        <top-menu></top-menu>
+      </el-header>
+      <el-container style="height: 100%;">
+        <side-menu></side-menu>
+        <el-main style="height: 100%">
+          <router-view/>
+        </el-main>
+      </el-container>
+    </el-container>
   </div>
 </template>
-<style lang="stylus">
-#app
-  font-family 'Avenir', Helvetica, Arial, sans-serif
-  -webkit-font-smoothing antialiased
-  -moz-osx-font-smoothing grayscale
-  text-align center
-  color #2c3e50
 
-#nav
-  padding 30px
-  a
-    font-weight bold
-    color #2c3e50
-    &.router-link-exact-active
-      color #42b983
+<script>
+import '../public/css/reset.css'
+import topMenu from './layout/nav.vue'
+import sideMenu from './layout/menu.vue'
+
+export default {
+  name: 'App',
+  components: {
+    topMenu,
+    sideMenu
+  }
+}
+</script>
+
+<style lang="stylus">
+  html, body, #app {
+    height: 100%;
+  }
+
+  #app {
+    font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+    font-size: 14px;
+  }
+
+  .top-menu {
+    height 60px
+    background-color: #545c64;
+    background: url('./assets/image/top_bg.png');
+    background-size 100%;
+    color: #333;
+    padding 0;
+  }
+
+  .el-main {
+    background-color: #E9EEF3;
+    color: #333;
+  }
 </style>

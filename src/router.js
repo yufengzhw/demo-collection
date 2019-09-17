@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from './views/Home.vue'
+import Index from './views/index/index.vue'
 
 Vue.use(Router)
 
@@ -8,16 +8,28 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: Home
+      exact: true,
+      redirect: '/planeDeform'
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (about.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import(/* webpackChunkName: "about" */ './views/About.vue')
+      path: '/index',
+      name: 'index',
+      component: Index
+    },
+    {
+      path: '/planeDeform',
+      name: 'plane-deform',
+      component: () => import('./views/plane-deform/plane-deform.vue')
+    },
+    {
+      path: '/labelPoint',
+      name: 'label-point',
+      component: () => import('./views/label-point/label-point.vue')
+    },
+    {
+      path: '/rubicCube',
+      name: 'rubic-cube',
+      component: () => import('./views/rubic-cube/rubic-cube.vue')
     }
   ]
 })
