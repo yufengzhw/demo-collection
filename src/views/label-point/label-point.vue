@@ -481,22 +481,33 @@ export default {
     },
     registerKeyEvent () {
       window.document.onkeydown = event => {
-        if (event.keyCode === this.$keyCodeValue.w) {
-          this.toggleIndex('up')
-        } else if (event.keyCode === this.$keyCodeValue.s) {
-          this.toggleIndex('down')
-        } else if (event.keyCode === this.$keyCodeValue.q) {
-          this.setTag1(-1)
-        } else if (event.keyCode === this.$keyCodeValue.r) {
-          this.setTag2(2)
-        } else if (event.keyCode === this.$keyCodeValue.l) {
-          this.setTag2(1)
-        } else if (event.keyCode === this.$keyCodeValue.c) {
-          this.clearSelection()
-        } else if (event.keyCode === this.$keyCodeValue.g) {
-          this.chooseNeighbor()
-        } else if (event.keyCode >= this.$keyCodeValue.n0 && event.keyCode < this.$keyCodeValue.n0 + 10) {
-          this.setTag1(event.keyCode - this.$keyCodeValue.n0)
+        if (event.code.startsWith('Digit')) {
+          return this.setTag1(Number(event.code.slice(-1)))
+        }
+        switch (event.code) {
+          case 'KeyW':
+            this.toggleIndex('up')
+            break
+          case 'KeyS':
+            this.toggleIndex('down')
+            break
+          case 'KeyQ':
+            this.setTag1(-1)
+            break
+          case 'KeyR':
+            this.setTag2(2)
+            break
+          case 'KeyL':
+            this.setTag2(1)
+            break
+          case 'KeyC':
+            this.clearSelection()
+            break
+          case 'KeyG':
+            this.chooseNeighbor()
+            break
+          default:
+            break
         }
       }
     },

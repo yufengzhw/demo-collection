@@ -21,7 +21,11 @@ Vue.prototype.$keyCodeValue = {
   r: 82,
   l: 76,
   c: 67,
-  g: 71
+  g: 71,
+  u: 85,
+  d: 68,
+  f: 70,
+  b: 66
 }
 
 new Vue({
