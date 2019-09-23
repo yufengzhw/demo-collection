@@ -11,6 +11,7 @@
       <div style="text-align:center;margin-top:10px">
         <i class="el-icon-menu" style="color:#fff;font-size:24px;cursor:pointer" @click="isCollapse=!isCollapse"></i>
       </div>
+<!--      首页和介绍页部分待开发-->
 <!--      <el-submenu index="1">-->
 <!--        <template slot="title">-->
 <!--          <i class="el-icon-info"></i>-->

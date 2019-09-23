@@ -14,7 +14,8 @@ import {
   AmbientLight,
   SpotLight,
   Object3D,
-  Vector3
+  Vector3,
+  Euler
 } from 'three'
 import RubicCube from './cube.js'
 
@@ -40,24 +41,30 @@ export default {
     this.registerMove()
   },
   methods: {
+    reset () {
+      this.initScene()
+    },
     registerKeyEvents () {
       window.document.onkeydown = event => {
-        if (['KeyR', 'KeyL', 'KeyF', 'KeyB', 'KeyU', 'KeyD'].includes(event.code)) {
-          this.move(event.code.slice(-1).toLowerCase(), event.shiftKey)
+        if (['KeyR', 'KeyL', 'KeyF', 'KeyB', 'KeyU', 'KeyD', 'KeyX', 'KeyY', 'KeyZ'].includes(event.code)) {
+          this.move(event.code.slice(-1), event.shiftKey, event.ctrlKey)
         }
       }
     },
     registerMove () {
-      ['R', 'L', 'U', 'D', 'F', 'B'].forEach(key => {
+      ['R', 'L', 'U', 'D', 'F', 'B', 'X', 'Y', 'Z', 'r', 'l', 'u', 'd', 'f', 'b'].forEach(key => {
         this[`move${key}`] = reverse => {
           reverse
-            ? this.rubicCube[`move${key}_`](this.updateView, requestAnimationFrame, this.moveTime)
-            : this.rubicCube[`move${key}`](this.updateView, requestAnimationFrame, this.moveTime)
+            ? this.rubicCube[`move${key}_`](this.updateView, this.moveTime)
+            : this.rubicCube[`move${key}`](this.updateView, this.moveTime)
         }
       })
     },
-    move (tag, reverse) {
-      this[`move${tag.toUpperCase()}`](reverse)
+    move (tag, reverse, ctrlKey) {
+      if (!(tag in ['X', 'Y', 'Z']) && ctrlKey) {
+        tag = tag.toLowerCase()
+      }
+      this[`move${tag}`](reverse)
     },
     initScene () {
       // 创建场景，摄像机，渲染器，设置画布背景色和尺寸
@@ -84,11 +91,10 @@ export default {
       this.updateView()
     },
     getSpotLight () {
-      let pointColor = '#ffffff'
-      let spotLight = new SpotLight(pointColor)
+      const pointColor = '#ffffff'
+      const spotLight = new SpotLight(pointColor)
       spotLight.position.set(0, 5, 20)
-      let target = new Object3D()
-      spotLight.target = target
+      spotLight.target = new Object3D() // target to the origin point
       return spotLight
     },
     updateView () {
@@ -112,6 +118,9 @@ export default {
       }
     },
     mouseMove (ev) {
+      if (this.lastX < 0) {
+        return
+      }
       const x = ev.clientX
       const y = ev.clientY
       if (ev.buttons !== 1) {
@@ -124,13 +133,23 @@ export default {
       this.lastY = y
       this.rubicCube.rotate(new Vector3(1, 0, 0), dy)
       this.rubicCube.rotate(new Vector3(0, 1, 0), dx)
+      const resRotation = this.rubicCube.cube.rotation
+      // restrict rotation view to avoid actions using mouse
+      // should not do the following, check api of three.js in future
+      const rx = Math.max(Math.min(resRotation._x, Math.PI / 6), -Math.PI / 6)
+      const ry = Math.max(Math.min(resRotation._y, Math.PI / 6), -Math.PI / 6)
+      const rz = Math.max(Math.min(resRotation._z, Math.PI / 6), -Math.PI / 6)
+      this.rubicCube.cube.setRotationFromEuler(new Euler(rx, ry, rz))
       this.updateView()
     },
     mouseUp () {
+      if (this.lastX < 0) {
+        this.dragging = false
+        return
+      }
       if (this.dragging) {
         this.updateView()
       }
-      this.dragging = false
     }
   }
 }

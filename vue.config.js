@@ -1,3 +1,6 @@
 module.exports = {
-  outputDir: 'server/public'
+  outputDir: 'server/public',
+  devServer: {
+    proxy: 'http://localhost:20020'
+  }
 }

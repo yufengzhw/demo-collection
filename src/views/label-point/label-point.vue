@@ -2,15 +2,9 @@
   <div class="label-point">
     <el-row>
       <el-col :span="7">
-        <a href="javascript:;" class="file">选择文件
-          <input type="file" class="form-control" id="file" :accept="SheetJSFT" @change="_change"/>
-        </a>
-        <a href="javascript:;" class="file" @click.prevent.stop="loadExampleData">加载示例数据
-          <input type="button" class="form-control"/>
-        </a>
-        <a href="javascript:;" class="file" @click.prevent.stop="saveFile">保存文件
-          <input type="button" class="form-control"/>
-        </a>
+        <file-loader-button @change="changeLoadData">加载文件</file-loader-button>
+        <el-button type="primary" @click="loadExampleData">加载示例数据</el-button>
+        <el-button type="primary" @click="saveFile">保存文件</el-button>
         <div style="margin: 10px auto 10px">x=0: {{timeRefFormat}}</div>
         <el-table
           :data="data"
@@ -19,44 +13,26 @@
           :row-class-name="tableRowClassName"
           @current-change="selectRow"
           ref="dataTable">
-          <el-table-column
-            prop="0"
-            label="x">
-          </el-table-column>
-          <el-table-column
-            prop="1"
-            label="y">
-          </el-table-column>
-          <el-table-column
-            prop="2"
-            label="z"
-          >
-          </el-table-column>
-          <el-table-column
-            prop="tag1"
-            label="tag1"
-          >
-          </el-table-column>
-          <el-table-column
-            prop="tag2"
-            label="tag2"
-          >
-          </el-table-column>
+          <el-table-column prop="0" label="x"></el-table-column>
+          <el-table-column prop="1" label="y"></el-table-column>
+          <el-table-column prop="2" label="z"></el-table-column>
+          <el-table-column prop="tag1" label="tag1"></el-table-column>
+          <el-table-column prop="tag2" label="tag2"></el-table-column>
         </el-table>
       </el-col>
       <el-col :span="4">
         <div class="dis-option" style="margin: 10px 5px 0">
           <p class="text">显示选项</p>
           <div class="noise-hidden" style="margin: 5px 10px">
-            <el-switch v-model="noiseHidden" active-text="屏蔽噪音" inactive-text="显示噪音" @change="_updateFigure"></el-switch>
+            <el-switch v-model="noiseHidden" active-text="屏蔽噪音" inactive-text="显示噪音" @change="updateFigure"></el-switch>
           </div>
           <div class="tag1-hidden" style="margin: 5px 10px">
-            <el-select v-model="tag1Hidden" multiple placeholder="请选择屏蔽的tag1" @change="_updateFigure">
+            <el-select v-model="tag1Hidden" multiple placeholder="请选择屏蔽的tag1" @change="updateFigure">
               <el-option v-for="item in tag1Group" :key="item" :label="item" :value="item"></el-option>
             </el-select>
           </div>
           <div class="tag2-hidden" style="margin: 5px 10px">
-            <el-select v-model="tag2Hidden" multiple placeholder="请选择屏蔽的tag2" @change="_updateFigure">
+            <el-select v-model="tag2Hidden" multiple placeholder="请选择屏蔽的tag2" @change="updateFigure">
               <el-option v-for="item in tag2Group" :key="item" :label="item" :value="item"></el-option>
             </el-select>
           </div>
@@ -69,15 +45,15 @@
               <p>距离范围</p>
               <el-input-number v-model="distanceRange" :precision="2" :step="0.05" :max="10" :min="0.01"></el-input-number>
             </div>
-            <div class="t-scale option-item">
+            <div class="option-item">
               <p>x_scale</p>
               <el-input-number v-model="xScale" :precision="3" :step="0.05" :max="5" :min="0.01"></el-input-number>
             </div>
-            <div class="t-scale option-item">
+            <div class="option-item">
               <p>y_scale</p>
               <el-input-number v-model="yScale" :precision="2" :step="0.1" :max="4" :min="0.01"></el-input-number>
             </div>
-            <div class="t-scale option-item">
+            <div class="option-item">
               <p>z_scale</p>
               <el-input-number v-model="zScale" :precision="0" :step="1" :max="50" :min="0.01"></el-input-number>
             </div>
@@ -87,58 +63,38 @@
             </div>
           </div>
         </div>
-        <div style="margin: 0 5px">
-          <p style="margin: 10px 10px 5px">快捷键说明</p>
-          <div style="margin: 0 15px; line-height: 20px">
-            <div>w,s:选择上（下）个点</div>
-            <div>g:选择附近的点</div>
-            <div>c:清空选择</div>
-            <div>1~9:设置当前选择点的tag1（1～9）</div>
-            <div>l,r:设置当前选择点的tag2（1/2）</div>
-            <div>q:设置当前选择点为噪点</div>
-          </div>
+        <div class="shortcut-comment" v-once>
+          <list-comment title="快捷键说明:" :data="shortcutComment" bullet="*"></list-comment>
         </div>
       </el-col>
       <el-col :span="13">
-        <div class="figure" ref="figure" width="100%"></div>
+        <div class="figure" ref="figure"></div>
       </el-col>
     </el-row>
-    <div class="comment">
-      <p class="title">说明：</p>
-      <ul>
-        <li>*该工具用于对某种类型的三维数据进行手动快速标定</li>
-        <li>*初次运行Demo程序可先点击加载示例数据，后续可以点击选择文件来加载已保存的xlsx文件</li>
-        <li>*点击保存文件直接下载数据为xlsx文件</li>
-        <li>*选择数据点：点击表格中一行数据或从图中选择数据点</li>
-        <li>*从当前数据选择附近数据：点击选择附近的点或者按g可从当前数据点选择附近的点，用于批量编辑数据</li>
-      </ul>
+    <div class="comment" v-once>
+      <list-comment title="说明:" :data="pageComment" bullet="*"></list-comment>
     </div>
   </div>
 </template>
 
 <script>
-import XLSX from 'xlsx'
-
-const _SheetJSFT = [
-  'xlsx', 'xlsb', 'xlsm', 'xls', 'xml', 'csv', 'txt', 'ods', 'fods', 'uos', 'sylk', 'dif', 'dbf', 'prn', 'qpw', '123', 'wb*', 'wq*', 'html', 'htm'
-].map(function (x) {
-  return '.' + x
-}).join(',')
-
-const tagColor = ['#1710c0', '#0b9df0', '#00fea8', '#f5f811', '#f09a09', '#fe0300', '#000000']
-const selectColor = '#000000'
-const noiseColor = '#B0B5BE'
+import { formatDate } from '@/common/js/date'
+import { genExampleData, preprocessData, saveData } from '@/components/label-point/data'
+import { getfigureOptions, SELECT_TAG } from '@/components/label-point/figure'
+import ListComment from '@/base/list-comment/list-comment.vue'
+import FileLoaderButton from '@/components/label-point/csvFileLoaderButton/fileLoaderButton.vue'
 
 export default {
   data () {
+    const maxTag1 = 4
     return {
       data: [],
       timeRef: 0,
-      SheetJSFT: _SheetJSFT,
       showFourth: false,
       indexSelect: -1,
       noiseHidden: false,
-      tag1Group: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+      maxTag1,
+      tag1Group: new Array(maxTag1).fill(null).map((_, index) => index + 1),
       tag1Hidden: [],
       tag2Group: [1, 2],
       tag2Hidden: [],
@@ -146,7 +102,22 @@ export default {
       xScale: 50,
       yScale: 1.5,
       zScale: 4,
-      distanceRange: 1
+      distanceRange: 1,
+      shortcutComment: [
+        'w,s:选择上（下）个点',
+        'g:选择附近的点',
+        'c:清空选择',
+        '1~4:设置当前选择点的tag1(1～4)',
+        'l,r:设置当前选择点的tag2(1/2)',
+        'q:设置当前选择点为噪点'
+      ],
+      pageComment: [
+        '该工具用于对某种类型的三维数据进行手动快速标定',
+        '初次运行Demo程序可先点击加载示例数据，后续可以点击选择文件来加载已保存的xlsx文件',
+        '点击保存文件直接下载数据为xlsx文件',
+        '选择数据点：点击表格中一行数据或从图中选择数据点',
+        '从当前数据选择附近数据：点击选择附近的点或者按g可从当前数据点选择附近的点，用于批量编辑数据'
+      ]
     }
   },
   computed: {
@@ -155,92 +126,26 @@ export default {
     }
   },
   mounted () {
-    this._initFigure()
+    this.initFigure()
     this.registerKeyEvent()
   },
   methods: {
     loadExampleData () {
-      const data = []
       this.timeRef = ((new Date()).getTime() / 1000) | 0
-      for (let i = 0; i < 100; i++) {
-        let dataItem = [
-          parseFloat((i * 2 + Math.random() * 10).toFixed(3)),
-          parseFloat((2.5 + Math.random() * 0.5).toFixed(3)),
-          parseFloat((5 + 0.35 * i + Math.random() * 0.05).toFixed(3))
-        ]
-        dataItem.tag1 = 1
-        dataItem.tag2 = 1
-        data.push(dataItem)
-
-        dataItem = [
-          parseFloat((i * 2 + Math.random() * 10).toFixed(3)),
-          parseFloat((4.5 + Math.random() * 0.5).toFixed(3)),
-          parseFloat((5 + 0.35 * i + Math.random() * 0.05).toFixed(3))
-        ]
-        dataItem.tag1 = 1
-        dataItem.tag2 = 2
-        data.push(dataItem)
-
-        dataItem = [
-          parseFloat((i * 2 + Math.random() * 10).toFixed(3)),
-          parseFloat((6.5 + Math.random() * 0.5).toFixed(3)),
-          parseFloat((15 + 0.35 * i + Math.random() * 0.05).toFixed(3))
-        ]
-        dataItem.tag1 = 2
-        dataItem.tag2 = 1
-        data.push(dataItem)
-
-        dataItem = [
-          parseFloat((i * 2 + Math.random() * 10).toFixed(3)),
-          parseFloat((8.5 + Math.random() * 0.5).toFixed(3)),
-          parseFloat((15 + 0.35 * i + Math.random() * 0.05).toFixed(3))
-        ]
-        dataItem.tag1 = 2
-        dataItem.tag2 = 2
-        data.push(dataItem)
-
-        dataItem = [
-          i > 0 ? parseFloat((Math.random() * 200).toFixed(3)) : 0,
-          parseFloat((Math.random() * 10).toFixed(3)),
-          parseFloat((Math.random() * 60).toFixed(3))
-        ]
-        dataItem.tag1 = -1
-        dataItem.tag2 = -1
-        data.push(dataItem)
-      }
-      data.sort((a, b) => a[0] - b[0])
-      this.data = data
+      this.data = genExampleData()
       this.$nextTick(() => {
-        this._initFigure()
-        this._updateFigure()
+        this.updateFigure()
+      })
+    },
+    changeLoadData (data) {
+      this.timeRef = (data[0] && data[0][0]) || 0
+      this.data = preprocessData(data, this.timeRef)
+      this.$nextTick(() => {
+        this.updateFigure()
       })
     },
     formatDate (date) {
-      console.log(date)
-      let y = date.getFullYear()
-      let m = date.getMonth() + 1
-      m = m < 10 ? '0' + m : m
-      let d = date.getDate()
-      d = d < 10 ? ('0' + d) : d
-      let h = date.getHours()
-      h = h < 10 ? ('0' + h) : h
-      let minute = date.getMinutes()
-      minute = minute < 10 ? ('0' + minute) : minute
-      let second = date.getSeconds()
-      second = second < 10 ? ('0' + second) : second
-      return y + '-' + m + '-' + d + ' ' + h + ':' + minute + ':' + second
-    },
-    outputName () {
-      let date = new Date(this.timeRef * 1000)
-      let m = date.getMonth() + 1
-      m = m < 10 ? '0' + m : m
-      let d = date.getDate()
-      d = d < 10 ? ('0' + d) : d
-      let h = date.getHours()
-      h = h < 10 ? ('0' + h) : h
-      let minute = date.getMinutes()
-      minute = minute < 10 ? ('0' + minute) : minute
-      return `${m}_${d}_${h}_${minute}_label.xlsx`
+      return formatDate(date)
     },
     tableRowClassName ({ row, rowIndex }) {
       if (rowIndex === this.indexSelect) {
@@ -252,64 +157,22 @@ export default {
       }
       return 'blank-row'
     },
-    _change (evt) {
-      this.data = []
-      const files = evt.target.files
-      if (files && files[0]) this._file(files[0])
-    },
-    _file (file) {
-      /* Boilerplate to set up FileReader */
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        /* Parse data */
-        const bstr = e.target.result
-        const wb = XLSX.read(bstr, { type: 'binary' })
-        /* Get first worksheet */
-        const wsname = wb.SheetNames[0]
-        const ws = wb.Sheets[wsname]
-        /* Convert array of arrays */
-        const data = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true })
-        this.timeRef = (data[0] && data[0][0]) || 0
-        for (let i = 0; i < data.length; i++) {
-          if (data[i].length > 0) {
-            data[i][0] = parseFloat((data[i][0] - this.timeRef).toFixed(3))
-            data[i].tag1 = data[i][3] ? data[i][3] : -1
-            data[i].tag2 = data[i][4] ? data[i][4] : -1
-          }
-        }
-        this.data = data
-        console.log('data', data)
-        this._refreshDataTable()
-        this._updateFigure()
-      }
-      reader.readAsBinaryString(file)
-    },
-    _clearDataTag () {
-      for (let i = 0; i < this.data.length; i++) {
-        this.data[i].tag = -1
-      }
-    },
-    _refreshDataTable () {
-      let data = this.data
-      this.data = []
-      this.data = data
-    },
-    _initFigure () {
+    initFigure () {
       this.figure = this.$echarts.init(this.$refs.figure)
       this.figure.on('click', val => {
         this.indexSelect = this.data.findIndex(item => {
-          return item[0] === val.data[2] && item[1] === val.data[1] && item[2] === val.data[0]
+          return item[0] === val.data[0] && item[1] === val.data[1] && item[2] === val.data[2]
         })
         if (this.indexSelect > -1) {
-          this._updateFigure()
+          this.updateFigure()
         }
         if (val.dataIndex && val.dataIndex >= 0 && val.dataIndex < this.data.length) {
           this.indexSelect = val.dataIndex
-          this._updateFigure()
+          this.updateFigure()
         }
       })
     },
-    _updateFigure () {
+    updateFigure () {
       let data = []
       for (let i = 0; i < this.data.length; i++) {
         let item = this.data[i]
@@ -323,83 +186,16 @@ export default {
           continue
         }
         if (this.indexSelect > -1 && this.indexSelect === i) {
-          data.push([item[0], item[1], item[2], 100, item['tag2']])
+          data.push([item[0], item[1], item[2], SELECT_TAG, item['tag2']])
         } else if (this.groupPointSelect.indexOf(i) > -1) {
-          data.push([item[0], item[1], item[2], 100, item['tag2']])
+          data.push([item[0], item[1], item[2], SELECT_TAG, item['tag2']])
         } else {
           data.push([item[0], item[1], item[2], item['tag1'], item['tag2']])
         }
       }
-      this.figure.setOption({
-        visualMap: [{
-          show: false,
-          type: 'piecewise',
-          splitNumber: 6,
-          pieces: [
-            { min: 4.5 },
-            { min: 3.5, max: 4.5 },
-            { min: 2.5, max: 3.5 },
-            { min: 1.5, max: 2.5 },
-            { min: 0.5, max: 1.5 },
-            { min: -0.5, max: 0.5 }
-          ],
-          dimension: 'tag1',
-          inRange: {
-            color: tagColor
-          },
-          outOfRange: {
-            color: [noiseColor]
-          }
-        }],
-        xAxis3D: {
-          name: 'x',
-          type: 'value'
-        },
-        yAxis3D: {
-          name: 'y',
-          type: 'value'
-        },
-        zAxis3D: {
-          name: 'z',
-          type: 'value'
-        },
-        grid3D: {
-          viewControl: {
-            projection: 'orthographic'
-          }
-        },
-        series: [{
-          type: 'scatter3D',
-          dimensions: ['x', 'y', 'z', 'tag1', 'tag2'],
-          data: data,
-          symbolSize: 12,
-          itemStyle: {
-            //              borderWidth: 1,
-            //              borderColor: 'rgba(255, 0, 0, 0)'
-          },
-          emphasis: {
-            itemStyle: {
-              color: selectColor
-            }
-          }
-        }]
-      })
-    },
-    selectRow (val) {
-      this.indexSelect = this.data.findIndex(item => item === val)
-      this.groupPointSelect = [] // 清空多选
-      console.log('select row', this.indexSelect)
-      this._refreshDataTable()
-      this._updateFigure()
-    },
-    clearSelection () {
-      this.indexSelect = -1
-      this.groupPointSelect = []
-      this._refreshDataTable()
-      this._updateFigure()
+      this.figure.setOption(getfigureOptions(data))
     },
     toggleIndex (tag) {
-      //        console.log(tag)
       if (this.data.length === 0) {
         return
       }
@@ -410,7 +206,17 @@ export default {
         this.indexSelect -= 1
         this.indexSelect = (this.indexSelect < 0) ? 0 : this.indexSelect
       }
-      this._updateFigure()
+      this.updateFigure()
+    },
+    selectRow (val) {
+      this.indexSelect = this.data.findIndex(item => item === val)
+      this.groupPointSelect = [] // 清空多选
+      this.updateFigure()
+    },
+    clearSelection () {
+      this.indexSelect = -1
+      this.groupPointSelect = []
+      this.updateFigure()
     },
     setTag1 (val) {
       if (this.indexSelect < 0) {
@@ -432,8 +238,7 @@ export default {
       })
       this.indexSelect = -1
       this.groupPointSelect = []
-      this._refreshDataTable()
-      this._updateFigure()
+      this.updateFigure()
     },
     setTag2 (val) {
       if (this.indexSelect < 0 || this.data[this.indexSelect].tag1 < 0) {
@@ -447,8 +252,7 @@ export default {
       })
       this.indexSelect = -1
       this.groupPointSelect = []
-      this._refreshDataTable()
-      this._updateFigure()
+      this.updateFigure()
     },
     chooseNeighbor () {
       if (this.indexSelect < 0) {
@@ -456,6 +260,7 @@ export default {
       }
       this.groupPointSelect = []
       let currentItem = this.data[this.indexSelect]
+      // optimized in the future
       for (let i = 0; i < this.data.length; i++) {
         if (i !== this.indexSelect) {
           let item = this.data[i]
@@ -476,8 +281,7 @@ export default {
           }
         }
       }
-      this._refreshDataTable()
-      this._updateFigure()
+      this.updateFigure()
     },
     registerKeyEvent () {
       window.document.onkeydown = event => {
@@ -512,43 +316,18 @@ export default {
       }
     },
     saveFile () {
-      if (this.data.length === 0) {
-        return
-      }
-      let data = this.data.map(item => [item[0] + this.timeRef, item[1], item[2], item.tag1, item.tag2])
-      let ws = XLSX.utils.aoa_to_sheet(data)
-      let wb = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(wb, ws, 'new_sheet')
-      XLSX.writeFile(wb, this.outputName())
+      saveData(this.data, this.timeRef)
     }
+  },
+  components: {
+    FileLoaderButton,
+    ListComment
   }
 }
 </script>
 <style lang="stylus">
+  @import "~@/common/css/variable"
   .label-point
-    .file
-      position: relative
-      display: inline-block
-      background: #D0EEFF
-      border: 1px solid #99D3F5
-      border-radius: 4px
-      padding: 4px 12px
-      overflow: hidden
-      color: #1E88C7
-      text-decoration: none
-      text-indent: 0
-      line-height: 20px
-      &:hover
-        background: #AADFFD;
-        border-color: #78C3F3;
-        color: #004974;
-        text-decoration: none;
-      input
-        position: absolute
-        font-size: 100px
-        right: 0
-        top: 0
-        opacity: 0
     .group-choose
       .text
         line-height: 20px
@@ -557,20 +336,16 @@ export default {
           margin: 5px 0 5px 0
           p
             line-height: 20px
+    .shortcut-comment
+      margin: 10px 15px 5px 15px
     .figure
       margin-top: 30px
       width: 800px
       height: 800px
     .select-row
-      background-color: #a0cfff !important;
+      background-color: $color-table-row-select !important;
     .multi-select-row
-      background-color: #a0cfff !important;
+      background-color: $color-table-row-select !important;
     .comment
       margin-top: 30px
-      .title
-        font-weight: 500
-      ul
-        margin-top: 10px
-        line-height: 20px
-        text-indent: 1em
 </style>

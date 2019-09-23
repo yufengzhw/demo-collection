@@ -5,11 +5,12 @@ import {
   Vector3,
   Quaternion
 } from 'three'
+import { requestAnimFrame } from '@/common/js/requestAnimFrame'
 
 function rotationAroundWorldX (obj, rad) {
-  let y0 = obj.position.y
-  let z0 = obj.position.z
-  let q = new Quaternion()
+  const y0 = obj.position.y
+  const z0 = obj.position.z
+  const q = new Quaternion()
   q.setFromAxisAngle(new Vector3(1, 0, 0), rad)
   obj.quaternion.premultiply(q)
   obj.position.y = Math.cos(rad) * y0 - Math.sin(rad) * z0
@@ -17,9 +18,9 @@ function rotationAroundWorldX (obj, rad) {
 }
 
 function rotationAroundWorldY (obj, rad) {
-  let x0 = obj.position.x
-  let z0 = obj.position.z
-  let q = new Quaternion()
+  const x0 = obj.position.x
+  const z0 = obj.position.z
+  const q = new Quaternion()
   q.setFromAxisAngle(new Vector3(0, 1, 0), rad)
   obj.quaternion.premultiply(q)
   obj.position.x = Math.cos(rad) * x0 + Math.sin(rad) * z0
@@ -27,9 +28,9 @@ function rotationAroundWorldY (obj, rad) {
 }
 
 function rotationAroundWorldZ (obj, rad) {
-  let x0 = obj.position.x
-  let y0 = obj.position.y
-  let q = new Quaternion()
+  const x0 = obj.position.x
+  const y0 = obj.position.y
+  const q = new Quaternion()
   q.setFromAxisAngle(new Vector3(0, 0, 1), rad)
   obj.quaternion.premultiply(q)
   obj.position.x = Math.cos(rad) * x0 - Math.sin(rad) * y0
@@ -51,9 +52,11 @@ class Rotation {
           ? rotationAroundWorldY
           : rotationAroundWorldZ
   }
+
   move (obj, rad) {
     return this.rotationFunc(obj, rad * this.sign)
   }
+
   adjustBlockStatus (blockStatus, actionFactor) {
     // actionFactor:  1, -1, 2
     if (actionFactor !== 1 && actionFactor !== -1 && actionFactor !== 2) {
@@ -114,7 +117,43 @@ const Rotations = {
   B: RotationB,
   CR: RotationCR,
   CU: RotationCU,
-  CF: RotationCF
+  CF: RotationCF,
+  r: {
+    rotations: [RotationR, RotationCR],
+    factors: [1, 1]
+  },
+  l: {
+    rotations: [RotationL, RotationCR],
+    factors: [1, -1]
+  },
+  u: {
+    rotations: [RotationU, RotationCU],
+    factors: [1, 1]
+  },
+  d: {
+    rotations: [RotationD, RotationCU],
+    factors: [1, -1]
+  },
+  f: {
+    rotations: [RotationF, RotationCF],
+    factors: [1, 1]
+  },
+  b: {
+    rotations: [RotationB, RotationCF],
+    factors: [1, -1]
+  },
+  X: {
+    rotations: [RotationR, RotationCR, RotationL],
+    factors: [1, 1, -1]
+  },
+  Y: {
+    rotations: [RotationU, RotationCU, RotationD],
+    factors: [1, 1, -1]
+  },
+  Z: {
+    rotations: [RotationF, RotationCF, RotationB],
+    factors: [1, 1, -1]
+  }
 }
 
 export default class RubicCube {
@@ -132,10 +171,11 @@ export default class RubicCube {
     this.actions = []
     this.registerActions()
   }
+
   initCube () {
-    let group = new Mesh()
+    const group = new Mesh()
     // 标准配色：上白下黄左绿右蓝前红后橙
-    let meshFace = {
+    const meshFace = {
       down: new MeshBasicMaterial({ color: 0xfffa54 }), // yellow
       upper: new MeshBasicMaterial({ color: 0xffffff }), // white
       back: new MeshBasicMaterial({ color: 0xe76a2c }), // orange
@@ -167,17 +207,23 @@ export default class RubicCube {
     }
     return group
   }
+
   bindScene (scene) {
     scene.add(this.cube)
   }
-  basicMove (rotation, actionFactor, callback, loopFunc = requestAnimationFrame, actionTime = this.actionTime, newAction = true) {
+
+  basicMove (rotation, actionFactor, callback, actionTime = this.actionTime, newAction = true) {
     // actionFactor: 1, -1, 2
+    // rotation: array(Rotation) or Rotation
+    if (rotation instanceof Rotation) {
+      rotation = [rotation]
+      actionFactor = [actionFactor]
+    }
     if (newAction) {
       this.actions.push({
         rotation,
         actionFactor,
         callback,
-        loopFunc,
         actionTime
       })
     }
@@ -188,21 +234,26 @@ export default class RubicCube {
     this.rotating = true
     const startTime = Date.now()
     let lastTime = startTime
-    const rotateBlocks = []
+    const rotateBlocks = new Array(rotation.length).fill(null).map(() => [])
     this.blockStatus.forEach((block, index) => {
-      if (rotation.blocks.includes(block)) {
-        rotateBlocks.push(this.cube.children[index])
-      }
+      rotation.forEach((r, ind) => {
+        if (r.blocks.includes(block)) {
+          rotateBlocks[ind].push(this.cube.children[index])
+        }
+      })
     })
 
     function render () {
       if (lastTime >= startTime + actionTime) {
-        rotation.adjustBlockStatus(that.blockStatus, actionFactor)
+        rotation.forEach((r, ind) => {
+          r.adjustBlockStatus(that.blockStatus, actionFactor[ind])
+        })
+        // rotation.adjustBlockStatus(that.blockStatus, actionFactor)
         that.rotating = false
         that.actions.splice(0, 1)
         if (that.actions.length > 0) {
-          let { rotation, actionFactor, callback, loopFunc, actionTime } = that.actions[0]
-          that.basicMove(rotation, actionFactor, callback, loopFunc, actionTime, false)
+          let { rotation, actionFactor, callback, actionTime } = that.actions[0]
+          that.basicMove(rotation, actionFactor, callback, actionTime, false)
         }
         return
       }
@@ -210,30 +261,62 @@ export default class RubicCube {
       if (nowTime >= startTime + actionTime) {
         nowTime = startTime + actionTime
       }
-      const angle = Math.PI / 2 * (nowTime - lastTime) / actionTime * actionFactor
-      rotateBlocks.forEach(block => {
-        rotation.move(block, angle)
+
+      rotateBlocks.forEach((blocks, ind) => {
+        const angle = Math.PI / 2 * (nowTime - lastTime) / actionTime * actionFactor[ind]
+        blocks.forEach(block => {
+          rotation[ind].move(block, angle)
+        })
       })
       lastTime = nowTime
       callback()
-      loopFunc(render)
+      requestAnimFrame(render)
     }
+
     render()
   }
+
   rotate (axis, angle) {
     this.cube.rotateOnWorldAxis(axis, angle)
   }
+
   registerActions () {
     const that = this
     ;['R', 'L', 'U', 'D', 'F', 'B'].forEach(key => {
-      this[`move${key}`] = function (callback, loopFunc = requestAnimationFrame, actionTime = that.actionTime) {
-        that.basicMove(Rotations[key], 1, callback, loopFunc, actionTime)
+      this[`move${key}`] = function (callback, actionTime = that.actionTime) {
+        that.basicMove(Rotations[key], 1, callback, actionTime)
       }
-      this[`move${key}_`] = function (callback, loopFunc = requestAnimationFrame, actionTime = that.actionTime) {
-        that.basicMove(Rotations[key], -1, callback, loopFunc, actionTime)
+      this[`move${key}_`] = function (callback, actionTime = that.actionTime) {
+        that.basicMove(Rotations[key], -1, callback, actionTime)
       }
-      this[`move${key}2`] = function (callback, loopFunc = requestAnimationFrame, actionTime = that.actionTime) {
-        that.basicMove(Rotations[key], 2, callback, loopFunc, actionTime)
+      this[`move${key}2`] = function (callback, actionTime = that.actionTime) {
+        that.basicMove(Rotations[key], 2, callback, actionTime)
+      }
+    })
+    ;['r', 'l', 'u', 'd', 'f', 'b', 'X', 'Y', 'Z'].forEach(key => {
+      this[`move${key}`] = function (callback, actionTime = that.actionTime) {
+        that.basicMove(
+          Rotations[key].rotations,
+          Rotations[key].factors,
+          callback,
+          actionTime
+        )
+      }
+      this[`move${key}_`] = function (callback, actionTime = that.actionTime) {
+        that.basicMove(
+          Rotations[key].rotations,
+          Rotations[key].factors.map(factor => -1 * factor),
+          callback,
+          actionTime
+        )
+      }
+      this[`move${key}2`] = function (callback, actionTime = that.actionTime) {
+        that.basicMove(
+          Rotations[key].rotations,
+          Rotations[key].factors.map(factor => 2 * factor),
+          callback,
+          actionTime
+        )
       }
     })
   }

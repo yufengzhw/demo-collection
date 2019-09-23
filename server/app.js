@@ -1,4 +1,5 @@
 const Koa = require('koa')
+const Router = require('koa-router')
 const app = new Koa()
 const views = require('koa-views')
 const json = require('koa-json')
@@ -6,9 +7,9 @@ const onerror = require('koa-onerror')
 const bodyparser = require('koa-bodyparser')
 const logger = require('koa-logger')
 const path = require('path')
+const router = new Router()
 
-const index = require('./routes/index')
-const users = require('./routes/users')
+const rectDeformRouter = require('./routes/rect-deform')
 
 // error handler
 onerror(app)
@@ -20,10 +21,6 @@ app.use(bodyparser({
 app.use(json())
 app.use(logger())
 app.use(require('koa-static')(__dirname + '/public'))
-
-// app.use(views(__dirname + '/views', {
-//   extension: 'pug'
-// }))
 
 app.use(views(__dirname + '/views', {
   options: { settings: { views: path.join(__dirname, 'views') } },
@@ -40,12 +37,15 @@ app.use(async (ctx, next) => {
 })
 
 // routes
-app.use(index.routes(), index.allowedMethods())
-app.use(users.routes(), users.allowedMethods())
+app.use(router.routes())
+  .use(router.allowedMethods())
+
+// add router
+rectDeformRouter(router)
 
 // error-handling
 app.on('error', (err, ctx) => {
   console.error('server error', err, ctx)
-});
+})
 
 module.exports = app

@@ -1,4 +1,5 @@
 export function colorMapJet (value, min = -1, max = 1) {
+  // value (min ~ max) -> color: jet color map
   let color = new Float32Array(3)
   value = 2 * (value - min) / (max - min) - 1
   if (value < -1) {
