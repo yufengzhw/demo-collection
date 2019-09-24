@@ -42,12 +42,20 @@ export default {
   },
   methods: {
     reset () {
-      this.initScene()
+      // reset cube status
+      this.rubicCube.unbindScene(this.scene)
+      this.rubicCube = new RubicCube(3, 2.8, this.moveTime)
+      this.rubicCube.bindScene(this.scene)
+      this.rubicCube.rotate(new Vector3(1, 0, 0), 0.3)
+      this.rubicCube.rotate(new Vector3(0, 1, 0), -0.3)
+      this.updateView()
     },
     registerKeyEvents () {
       window.document.onkeydown = event => {
         if (['KeyR', 'KeyL', 'KeyF', 'KeyB', 'KeyU', 'KeyD', 'KeyX', 'KeyY', 'KeyZ'].includes(event.code)) {
           this.move(event.code.slice(-1), event.shiftKey, event.ctrlKey)
+        } else if (event.code === 'KeyI') {
+          this.reset()
         }
       }
     },
@@ -81,8 +89,8 @@ export default {
       this.rubicCube.bindScene(this.scene)
 
       // 添加灯光效果
-      this.ambientLight = new AmbientLight('#ffffff')
-      this.spotLight = this.getSpotLight()
+      this.ambientLight = new AmbientLight('#ffffff') // 漫反射光源
+      this.spotLight = this.getSpotLight() // 聚光灯光源
       this.scene.add(this.ambientLight)
       this.scene.add(this.spotLight)
 
@@ -91,6 +99,7 @@ export default {
       this.updateView()
     },
     getSpotLight () {
+      // spotlight
       const pointColor = '#ffffff'
       const spotLight = new SpotLight(pointColor)
       spotLight.position.set(0, 5, 20)
@@ -107,6 +116,7 @@ export default {
         this.updating = false
       })
     },
+    // 处理鼠标事件
     mouseDown (ev) {
       const x = ev.clientX
       const y = ev.clientY

@@ -9,7 +9,7 @@ export default new Router({
     {
       path: '/',
       exact: true,
-      redirect: '/planeDeform'
+      redirect: '/rubicCube'
     },
     {
       path: '/index',

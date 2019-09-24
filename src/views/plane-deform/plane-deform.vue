@@ -100,8 +100,8 @@ export default {
     }
   },
   methods: {
-    animationTitle (obj) {
-      return obj.run ? '停止动画' : obj.name
+    animationTitle (animation) {
+      return animation.run ? '停止动画' : animation.name
     },
     controlAnimation1 () {
       if (!this.animation1.run && !this.animationStatus) {
@@ -148,47 +148,6 @@ export default {
       })
       this.refresh()
     },
-    mouseDown (ev) {
-      // only for left button
-      if (ev.buttons !== 1) {
-        return
-      }
-      let x = ev.clientX; let y = ev.clientY
-      // Start dragging if a mouse is in <canvas>
-      let rect = ev.target.getBoundingClientRect()
-      if (rect.left <= x && x < rect.right && rect.top <= y && y < rect.bottom) {
-        this.lastX = x
-        this.lastY = y
-        this.dragging = true
-      }
-    },
-    mouseMove (ev) {
-      // only for left button
-      if (ev.buttons !== 1) {
-        return
-      }
-      let x = ev.clientX; let y = ev.clientY
-      if (this.dragging) {
-        let factor = this.draggingSpeed
-        let dx = factor * (x - this.lastX)
-        let dy = factor * (y - this.lastY)
-        this.rotateX = this.rotateX + dy
-        this.rotateY = this.rotateY + dx
-      }
-      this.lastX = x
-      this.lastY = y
-      this.refresh()
-    },
-    mouseUp (ev) {
-      // only for left button
-      if (ev.buttons !== 1) {
-        return
-      }
-      if (this.dragging) {
-        this.refresh()
-      }
-      this.dragging = false
-    },
     randomRefresh () {
       if (this.animationStatus) {
         return
@@ -229,6 +188,7 @@ export default {
       })
     },
     clear () {
+      // clear value
       if (this.animationStatus) {
         return
       }
@@ -249,6 +209,48 @@ export default {
       const factor = 0.02
       this.scaleRatio = this.scaleRatio * Math.exp((add ? factor : -factor))
       this.refresh()
+    },
+    // 鼠标事件
+    mouseDown (ev) {
+      // only for left button
+      if (ev.buttons !== 1) {
+        return
+      }
+      let x = ev.clientX; let y = ev.clientY
+      // Start dragging if a mouse is in <canvas>
+      let rect = ev.target.getBoundingClientRect()
+      if (rect.left <= x && x < rect.right && rect.top <= y && y < rect.bottom) {
+        this.lastX = x
+        this.lastY = y
+        this.dragging = true
+      }
+    },
+    mouseMove (ev) {
+      // only for left button
+      if (ev.buttons !== 1) {
+        return
+      }
+      let x = ev.clientX; let y = ev.clientY
+      if (this.dragging) {
+        let factor = this.draggingSpeed
+        let dx = factor * (x - this.lastX)
+        let dy = factor * (y - this.lastY)
+        this.rotateX = this.rotateX + dy
+        this.rotateY = this.rotateY + dx
+      }
+      this.lastX = x
+      this.lastY = y
+      this.refresh()
+    },
+    mouseUp (ev) {
+      // only for left button
+      if (ev.buttons !== 1) {
+        return
+      }
+      if (this.dragging) {
+        this.refresh()
+      }
+      this.dragging = false
     }
   },
   components: {

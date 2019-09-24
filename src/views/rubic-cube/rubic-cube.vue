@@ -9,9 +9,9 @@
       <el-col :span="12">
         <div class="comment" v-once>
           <list-comment title="操作说明:" :data="comment"></list-comment>
-          <div class="more">
-            更多功能开发中。。。
-          </div>
+<!--          <div class="more">-->
+<!--            更多功能开发中。。。-->
+<!--          </div>-->
         </div>
       </el-col>
     </el-row>
@@ -41,6 +41,7 @@ export default {
         'X: 整体以R的方向顺时针转动90度; shift+X: 整体以R的方向逆时针转动90度',
         'Y: 整体以U的方向顺时针转动90度; shift+Y: 整体以U的方向逆时针转动90度',
         'Z: 整体以F的方向顺时针转动90度; shift+Z: 整体以F的方向逆时针转动90度',
+        'I: 初始化/重置魔方状态',
         '鼠标拖拽：整体三维旋转'
       ]
     }

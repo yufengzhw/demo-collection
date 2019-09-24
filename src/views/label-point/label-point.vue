@@ -260,7 +260,7 @@ export default {
       }
       this.groupPointSelect = []
       let currentItem = this.data[this.indexSelect]
-      // optimized in the future
+      // to be optimized in the future
       for (let i = 0; i < this.data.length; i++) {
         if (i !== this.indexSelect) {
           let item = this.data[i]

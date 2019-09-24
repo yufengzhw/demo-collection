@@ -29,26 +29,19 @@ export default {
 </script>
 
 <style lang="stylus">
-  html, body, #app {
-    height: 100%;
-  }
-
-  #app {
+  html, body, #app
+    height: 100%
+  #app
     font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
-    font-size: 14px;
-  }
-
-  .top-menu {
-    height 60px
-    background-color: #545c64;
-    background: url('./assets/image/top_bg.png');
-    background-size 100%;
-    color: #333;
-    padding 0;
-  }
-
-  .el-main {
-    background-color: #E9EEF3;
-    color: #333;
-  }
+    font-size: 14px
+    .top-menu
+      height 60px
+      background-color: #545c64
+      background: url('./assets/image/top_bg.png')
+      background-size 100%
+      color: #333
+      padding 0
+    .el-main
+      background-color: #E9EEF3
+      color: #333
 </style>

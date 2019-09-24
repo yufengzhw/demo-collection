@@ -27,10 +27,10 @@ export default {
           const bstr = e.target.result
           console.log(bstr)
           const wb = XLSX.read(bstr, { type: 'binary' })
-          /* Get first worksheet */
+          // Get first worksheet
           const wsname = wb.SheetNames[0]
           const ws = wb.Sheets[wsname]
-          /* Convert array of arrays */
+          // Convert array of arrays
           const data = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true })
           // data: the first sheet of file, 2d array
           this.$emit('change', data)
