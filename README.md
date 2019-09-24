@@ -13,7 +13,7 @@
 ## 项目本地操作
 1. 克隆代码到本地
    ```
-   git clone
+   git clone https://github.com/yufengzhw/demo-collection
    ```
 2. 安装node环境(建议node10)和yarn，如需要调试还需全局安装vue-cli
    ```
